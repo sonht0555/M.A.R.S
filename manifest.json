@@ -1,0 +1,27 @@
+{
+  "update_url": "https://clients2.google.com/service/update2/crx",
+  "manifest_version": 3,
+  "name": "M.Λ.R.S - AI Translate",
+  "version": "1.0.7",
+  "description": "Best AI Translate Tool — Essay and novel will not be a problem.",
+  "permissions": ["storage","background"],
+  "action": {
+    "css":["css/popup.css"],
+    "js": ["js/popup.js"],
+    "default_popup": "html/popup.html"
+  },
+  "content_scripts": [{
+    "all_frames": true,
+    "matches": ["<all_urls>"],
+    "js": ["js/content.js", "js/translate.js", "js/tooltip.js"],
+    "css":["css/exten.css"],
+    "match_about_blank": true,
+    "run_at": "document_end"
+  }],
+  "icons": {
+    "16": "img/icon.png",
+    "48": "img/icon.png",
+    "128": "img/icon.png"
+  }
+}
+
