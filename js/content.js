@@ -1,4 +1,5 @@
 let originalText = '';
+let clipboardText = null;
 let currentInput = null;
 let savedInputSelection = null;
 let savedTextSelection = null;
@@ -9,7 +10,7 @@ let undoStack = [];
 function handleInputEvent(event) {
     if ((event.target.tagName === 'INPUT') || (event.target.tagName === 'TEXTAREA') || (event.target.tagName === 'SELECT')) {
         currentInput = event.target;
-        console.log ("1", currentInput);
+        console.log ("1", selectedText);
     } else {
         currentInput = null;
         console.log ("2", currentInput);
@@ -46,6 +47,9 @@ function applyTranslation(translatedText) {
 // Check the user click status
 document.addEventListener('select', handleInputEvent);
 document.addEventListener('mouseup', handleInputEvent);
+document.addEventListener('copy', () => {
+    clipboardText = document.getSelection().toString();
+});
 document.addEventListener('mouseup', () => {
     const selectedText = window.getSelection().toString();
     //updateRangeText();
@@ -59,14 +63,12 @@ document.addEventListener('keydown', async (event) => {
             const { onOffSwitchState, lang1st, lang2nd, lang3rd, key1st, key2nd, key3rd, fun1st, fun2nd, fun3rd } = result;
             if (!onOffSwitchState) return;
             const selectedText = window.getSelection().toString();
-            const clipboard = await navigator.clipboard.readText();
             // Translation process
             const handleTranslation = (triggerKey, funKey, lang) => {
                 if (event[funKey || 'metaKey'] && event.key === triggerKey) {
                     event.preventDefault();
                     event.stopPropagation();
-                    translateSelectedText(selectedText || clipboard, lang);
-                    console.log("Đã dịch:", selectedText || clipboard);
+                    translateSelectedText(selectedText || clipboardText, lang);
                 }
             };
             // Translation processing
@@ -106,7 +108,6 @@ function saveToStack(type, originalText, inputRange, inputSelected, textRange) {
 function undoLastAction() {
     if (undoStack.length > 0) {
         const lastState = undoStack.pop();
-        console.log("lastState.type",lastState.type)
         if (lastState.type === 'input') {
             lastState.input.value = lastState.text; 
             lastState.input.setSelectionRange(lastState.range.start, lastState.range.end);
