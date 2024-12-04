@@ -10,10 +10,10 @@ let undoStack = [];
 function handleInputEvent(event) {
     if ((event.target.tagName === 'INPUT') || (event.target.tagName === 'TEXTAREA') || (event.target.tagName === 'SELECT')) {
         currentInput = event.target;
-        console.log ("1", selectedText);
+        console.log ("click", currentInput);
     } else {
         currentInput = null;
-        console.log ("2", currentInput);
+        console.log ("click", currentInput);
     }
 }
 // Translation processing
