@@ -4,16 +4,18 @@ let currentInput = null;
 let savedInputSelection = null;
 let savedTextSelection = null;
 let undoStack = [];
+let metaPressCount = 0;
+let metaResetTimer = null;
 
 /* -------- Function Define -------- */
 // Check the object being clicked
 function handleInputEvent(event) {
     if ((event.target.tagName === 'INPUT') || (event.target.tagName === 'TEXTAREA') || (event.target.tagName === 'SELECT')) {
         currentInput = event.target;
-        console.log ("click", currentInput);
+        console.log("click", currentInput);
     } else {
         currentInput = null;
-        console.log ("click", currentInput);
+        console.log("click", currentInput);
     }
 }
 // Translation processing
@@ -38,7 +40,7 @@ function applyTranslation(translatedText) {
         originalText = savedTextSelection.toString();
         saveToStack('text', originalText, null, null, savedTextSelection);
         navigator.clipboard.writeText(translatedText);
-        savedTextSelection.deleteContents(); 
+        savedTextSelection.deleteContents();
         savedTextSelection.insertNode(document.createTextNode(translatedText));
     }
 }
@@ -59,34 +61,49 @@ document.addEventListener('mouseup', () => {
 });
 // Process translation after pressing shortcut key
 document.addEventListener('keydown', async (event) => {
-    chrome.storage.sync.get(['onOffSwitchState', 'lang1st', 'lang2nd', 'lang3rd','key1st', 'key2nd', 'key3rd','fun1st', 'fun2nd', 'fun3rd'], async function (result) {
-            const { onOffSwitchState, lang1st, lang2nd, lang3rd, key1st, key2nd, key3rd, fun1st, fun2nd, fun3rd } = result;
-            if (!onOffSwitchState) return;
-            const selectedText = window.getSelection().toString();
-            // Translation process
-            const handleTranslation = (triggerKey, funKey, lang) => {
-                if (event[funKey || 'metaKey'] && event.key === triggerKey) {
-                    event.preventDefault();
-                    event.stopPropagation();
-                    translateSelectedText(selectedText || clipboardText, lang);
-                }
-            };
-            // Translation processing
-            handleTranslation(key1st, fun1st, lang1st);
-            handleTranslation(key2nd, fun2nd, lang2nd);
-            handleTranslation(key3rd, fun3rd, lang3rd);
-            // Undo
-            if (event.metaKey && event.key === 'z') {
+    chrome.storage.sync.get(['onOffSwitchState', 'lang1st', 'lang2nd', 'lang3rd', 'key1st', 'key2nd', 'key3rd', 'fun1st', 'fun2nd', 'fun3rd'], async function(result) {
+        const { onOffSwitchState,lang1st,lang2nd,lang3rd,key1st,key2nd,key3rd,fun1st,fun2nd,fun3rd } = result;
+        if (!onOffSwitchState) return;
+        const selectedText = window.getSelection().toString();
+        // Translation process
+        const handleTranslation = (triggerKey, funKey, lang) => {
+            if (event[funKey || 'metaKey'] && event.key === triggerKey) {
                 event.preventDefault();
-                undoLastAction(event); 
+                event.stopPropagation();
+                translateSelectedText(selectedText || clipboardText, lang);
             }
+        };
+        if (['Meta', 'Control', 'Alt'].includes(event.key)) {
+            metaPressCount++;
+            clearTimeout(metaResetTimer);
+            metaResetTimer = setTimeout(() => {
+                if (metaPressCount === 2) {
+                    translateSelectedText(selectedText || clipboardText, lang1st);
+                } else if (metaPressCount === 3) {
+                    translateSelectedText(selectedText || clipboardText, lang2nd);
+                } else if (metaPressCount === 4) {
+                    translateSelectedText(selectedText || clipboardText, lang3rd);
+                }
+                metaPressCount = 0;
+            }, 300);
+            event.preventDefault();
+            event.stopPropagation();
         }
-    );
+        // Translation processing
+        handleTranslation(key1st, fun1st, lang1st);
+        handleTranslation(key2nd, fun2nd, lang2nd);
+        handleTranslation(key3rd, fun3rd, lang3rd);
+        // Undo
+        if (event.metaKey && event.key === 'z') {
+            event.preventDefault();
+            undoLastAction(event);
+        }
+    });
 });
 
 function saveToStack(type, originalText, inputRange, inputSelected, textRange) {
     if (undoStack.length >= 20) {
-        undoStack.shift(); 
+        undoStack.shift();
     }
     if (type === 'input') {
         undoStack.push({
@@ -109,7 +126,7 @@ function undoLastAction() {
     if (undoStack.length > 0) {
         const lastState = undoStack.pop();
         if (lastState.type === 'input') {
-            lastState.input.value = lastState.text; 
+            lastState.input.value = lastState.text;
             lastState.input.setSelectionRange(lastState.range.start, lastState.range.end);
         } else if ((lastState.type === 'text')) {
             lastState.range.deleteContents();
