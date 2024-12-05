@@ -9,61 +9,23 @@ function setLoadingCursor() {
     }, 500);
 }
 // Core Translate
-function translateSelectedText(selectedText, targetLang, prompt) {
+function translateSelectedText(selectedText, targetLang, context) {
     chrome.storage.sync.get(['AI'], function(result) {
-        const {
-            AI
-        } = result;
+        const {AI} = result;
         if (document.getElementById('marsContent')) {
             document.getElementById('load').style.opacity = '1';
         }
         if (AI) {
-            chrome.storage.sync.get(['openApi'], function(result) {
-                const openaiApiKey = result.openApi;
-                const apiUrl = 'https://api.openai.com/v1/chat/completions';
-                const requestData = {
-                    model: 'gpt-3.5-turbo',
-                    messages: [{
-                        role: 'assistant',
-                        content: `In the context: ${prompt}, translate to ${targetLang} paragraph of text: ${selectedText}`
-                    }, ],
-                    temperature: 0.7,
-                };
-                const requestOptions = {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${openaiApiKey}`,
-                    },
-                    body: JSON.stringify(requestData),
-                };
-
-                fetch(apiUrl, requestOptions)
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error(`Request failed with status ${response.status}`);
-                        }
-                        if (document.getElementById('marsContent')) {
-                            document.getElementById('load').style.opacity = '0';
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        const translatedText = data.choices[0].message.content;
-                        console.log('Open-AI');
-                        console.log('%cContent%c ' + selectedText, '', 'color: #10B981; font-style: italic;');
-                        console.log('%cTranslated [' + targetLang + ']%c ' + translatedText, '', 'color: #DD5639; font-style: italic;');
-                        setLoadingCursor();
-                        if (document.getElementById('marsContent')) {
-                            applyTranslationTooltip(translatedText);
-                        } else {
-                            applyTranslation(translatedText);
-                            console.log('prompt', prompt);
-                        }
-                    })
-                    .catch(error => {
-                        console.error(error.message);
-                    });
+            chrome.storage.sync.get(['GeminiAPI'], async function(result) {
+                const GeminiAPI = result.GeminiAPI;
+                console.log("GeminiAPI")
+                const translatedText = await translateWithGemini(selectedText, targetLang, context, GeminiAPI);
+                setLoadingCursor();
+                if (document.getElementById('marsContent')) {
+                    applyTranslationTooltip(translatedText);
+                } else {
+                    applyTranslation(translatedText);
+                }
             });
         } else {
             const xhrUrl = "https://translate.googleapis.com/translate_a/single?dt=t&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&dt=at&client=gtx&hl=" + targetLang + "&sl=auto&tl=" + targetLang + "&dj=1&source=bubble";
@@ -100,4 +62,31 @@ function translateSelectedText(selectedText, targetLang, prompt) {
             xhr.send("q=" + encodeURIComponent(selectedText));
         }
     });
+}
+// Gemini Translate
+async function translateWithGemini(selectedText, targetLang, context, apiKey) {
+    const prompt = `"Translate this into ${targetLang}: [${selectedText}] with context: [${context}] and with only translated content"`;
+    try {
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            contents: [{role: "user",parts: [{text: prompt,},],},],
+          }),
+        }
+      );
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      return result.candidates[0].content.parts[0].text;
+    } catch (error) {
+      console.error("Error during translation:", error);
+      return null;
+    }
 }

@@ -10,7 +10,7 @@
   <button id="abc">Dịch</button>
 </body>
 <script>
-  async function translateText(text, targetLanguage, context, apiKey) {
+  async function translateWithGemini(text, targetLanguage, context, apiKey) {
     const prompt = `"Translate this into ${targetLanguage}: [${text}] with context: [${context}] and with only translated content"`;
     try {
       const response = await fetch(

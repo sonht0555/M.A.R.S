@@ -16,7 +16,7 @@ const fun1st = document.getElementById('fun1st');
 const fun2nd = document.getElementById('fun2nd');
 const fun3rd = document.getElementById('fun3rd');
 const tookey = document.getElementById('tookey');
-const openApi = document.getElementById('openApi');
+const GeminiAPI = document.getElementById('GeminiAPI');
 const outputTextarea = document.getElementById('outputTextarea');
 const inputTextarea = document.getElementById('inputTextarea');
 const copy = document.getElementById('copy');
@@ -181,10 +181,10 @@ tookey.addEventListener('change', function() {
     console.log('tookey:', value);
 });
 // Setting -> Input API
-openApi.addEventListener('change', function() {
+GeminiAPI.addEventListener('change', function() {
     var value = this.value;
     chrome.storage.sync.set({
-        'openApi': value
+        'GeminiAPI': value
     });
 });
 
@@ -259,7 +259,7 @@ document.addEventListener('DOMContentLoaded', function() {
     getDataInStorage('key-1st', 'key1st');
     getDataInStorage('key-2nd', 'key2nd');
     getDataInStorage('key-3rd', 'key3rd');
-    chrome.storage.sync.get(['onOffSwitchState', 'AI', 'lang1st', 'lang2nd', 'lang3rd', 'key1st', 'key2nd', 'key3rd', 'translatedText', 'selectedText', 'targetLang', 'tookey', 'fun1st', 'fun2nd', 'fun3rd', 'openApi'], function(result) {
+    chrome.storage.sync.get(['onOffSwitchState', 'AI', 'lang1st', 'lang2nd', 'lang3rd', 'key1st', 'key2nd', 'key3rd', 'translatedText', 'selectedText', 'targetLang', 'tookey', 'fun1st', 'fun2nd', 'fun3rd', 'GeminiAPI'], function(result) {
         if (result.onOffSwitchState !== undefined) {
             onOffSwitch.checked = result.onOffSwitchState;
             if (result.onOffSwitchState == true) {
@@ -319,8 +319,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (result.tookey !== undefined) {
             tookey.value = result.tookey;
         }
-        if (result.openApi !== undefined) {
-            openApi.value = result.openApi;
+        if (result.GeminiAPI !== undefined) {
+            GeminiAPI.value = result.GeminiAPI;
         }
         if (result.translatedText) {
             outputTextarea.value = result.translatedText;
