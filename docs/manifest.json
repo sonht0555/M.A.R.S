@@ -2,7 +2,7 @@
   "update_url": "https://clients2.google.com/service/update2/crx",
   "manifest_version": 3,
   "name": "M.Λ.R.S - AI Translate",
-  "version": "1.0.7",
+  "version": "1.0.9",
   "description": "Best AI Translate Tool — Essay and novel will not be a problem.",
   "permissions": ["storage","background"],
   "action": {

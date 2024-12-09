@@ -96,7 +96,7 @@ function autoExpand(textarea) {
 }
 
 /* -------- Setting Function -------- */
-// GoogleAI - OpenAI text change
+// GoogleAI - Gemini text change
 AI.addEventListener('change', function() {
     const AI = this.checked;
     chrome.storage.sync.set({
@@ -105,7 +105,7 @@ AI.addEventListener('change', function() {
     if (this.checked) {
         Google.classList.add('tc');
         GPT.classList.remove('tc');
-        document.getElementById('flag-logo').textContent = 'Open';
+        document.getElementById('flag-logo').textContent = 'Gemini';
     } else {
         Google.classList.remove('tc');
         GPT.classList.add('tc');
@@ -279,7 +279,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (result.AI == true) {
                 Google.classList.add('tc');
                 GPT.classList.remove('tc');
-                document.getElementById('flag-logo').textContent = 'Open';
+                document.getElementById('flag-logo').textContent = 'Gemini';
             } else {
                 Google.classList.remove('tc');
                 GPT.classList.add('tc');
