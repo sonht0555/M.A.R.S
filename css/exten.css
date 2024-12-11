@@ -61,12 +61,23 @@
     z-index: 9998;
     transition: all 0.3s ease-in-out;
   }
-  .marsContent, .marsFooter{
+  .marsContent, .marsFooter, .marsBehind{
     display:flex;
     color: rgba(255, 255, 245, 0.86);
     font-size: 11px;
     font-family: "Averta-Regular",Tahoma, Arial, Helvetica, sans-serif !important;
     width:auto;
+    appearance: none;
+    border: none;
+    box-shadow: none;
+    outline: none;
+  }
+  .marsBehind{
+    background-color: #1E1E20;
+    padding:5px 10px 7px 10px;
+    border: 1px solid #272727;
+    line-height: 20px;
+    white-space: pre-wrap;
   }
   .marsContent{
     background-color: #1E1E20;
