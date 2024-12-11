@@ -2,9 +2,9 @@
   "update_url": "https://clients2.google.com/service/update2/crx",
   "manifest_version": 3,
   "name": "M.Λ.R.S - AI Translate",
-  "version": "1.0.9",
+  "version": "1.1.1",
   "description": "Best AI Translate Tool — Essay and novel will not be a problem.",
-  "permissions": ["storage","background"],
+  "permissions": ["storage","background","activeTab"],
   "action": {
     "css":["css/popup.css"],
     "js": ["js/popup.js"],
@@ -13,11 +13,23 @@
   "content_scripts": [{
     "all_frames": true,
     "matches": ["<all_urls>"],
-    "js": ["js/content.js", "js/translate.js", "js/tooltip.js"],
+    "js": ["js/content.js", "js/translate.js", "js/tooltip.js", "js/selection.js"],
     "css":["css/exten.css"],
     "match_about_blank": true,
     "run_at": "document_end"
   }],
+  "background": {
+    "service_worker": "js/background.js",
+    "persistent": false
+  },
+  "commands": {
+    "start-selection": {
+      "suggested_key": {
+         "default": "Ctrl+Shift+S"
+      },
+      "description": "Start selection to capture part of the screen"
+    }
+  },
   "icons": {
     "16": "img/icon.png",
     "48": "img/icon.png",

@@ -16,7 +16,9 @@ const fun1st = document.getElementById('fun1st');
 const fun2nd = document.getElementById('fun2nd');
 const fun3rd = document.getElementById('fun3rd');
 const tookey = document.getElementById('tookey');
+const Prompt = document.getElementById('prompt');
 const GeminiAPI = document.getElementById('GeminiAPI');
+const VisionAPI = document.getElementById('VisionAPI');
 const outputTextarea = document.getElementById('outputTextarea');
 const inputTextarea = document.getElementById('inputTextarea');
 const copy = document.getElementById('copy');
@@ -76,8 +78,7 @@ function handleButtonClick(langKey) {
         chrome.storage.sync.set({
             'selectedText': selectedText
         }, function() {});
-        const prompt = document.getElementById('prompt').value
-        translateSelectedText(selectedText, targetLang, prompt);
+        translateSelectedText(selectedText, targetLang, Prompt.value);
     });
 }
 // Get data into storage
@@ -106,10 +107,12 @@ AI.addEventListener('change', function() {
         Google.classList.add('tc');
         GPT.classList.remove('tc');
         document.getElementById('flag-logo').textContent = 'Gemini';
+        Prompt.style.display = "block";
     } else {
         Google.classList.remove('tc');
         GPT.classList.add('tc');
         document.getElementById('flag-logo').textContent = 'Google';
+        Prompt.style.display = "none";
     }
 });
 // Setting toggle
@@ -165,11 +168,13 @@ onOffSwitch.addEventListener('change', function() {
         document.getElementById('langContent').classList.remove('tc');
         document.getElementById('AItrans').classList.remove('tc');
         document.getElementById('settingBtn').classList.remove('tc');
+        document.getElementById('startSelectionButton').classList.remove('tc');
     } else {
         On.classList.add('tc');
         document.getElementById('langContent').classList.add('tc');
         document.getElementById('AItrans').classList.add('tc');
         document.getElementById('settingBtn').classList.add('tc');
+        document.getElementById('startSelectionButton').classList.add('tc');
     }
 });
 // Setting -> Select ShortCut Key
@@ -180,11 +185,18 @@ tookey.addEventListener('change', function() {
     });
     console.log('tookey:', value);
 });
-// Setting -> Input API
+// Setting -> Input GeminiAPI
 GeminiAPI.addEventListener('change', function() {
     var value = this.value;
     chrome.storage.sync.set({
         'GeminiAPI': value
+    });
+});
+// Setting -> Input VisionAPI
+VisionAPI.addEventListener('change', function() {
+    var value = this.value;
+    chrome.storage.sync.set({
+        'VisionAPI': value
     });
 });
 
@@ -253,13 +265,14 @@ document.addEventListener('DOMContentLoaded', function() {
     checkTextarea(dele);
     autoExpand(inputTextarea);
     autoExpand(outputTextarea);
+    checkValidate();
     getDataInStorage('lang-1st', 'lang1st');
     getDataInStorage('lang-2nd', 'lang2nd');
     getDataInStorage('lang-3rd', 'lang3rd');
     getDataInStorage('key-1st', 'key1st');
     getDataInStorage('key-2nd', 'key2nd');
     getDataInStorage('key-3rd', 'key3rd');
-    chrome.storage.sync.get(['onOffSwitchState', 'AI', 'lang1st', 'lang2nd', 'lang3rd', 'key1st', 'key2nd', 'key3rd', 'translatedText', 'selectedText', 'targetLang', 'tookey', 'fun1st', 'fun2nd', 'fun3rd', 'GeminiAPI'], function(result) {
+    chrome.storage.sync.get(['onOffSwitchState', 'AI', 'lang1st', 'lang2nd', 'lang3rd', 'key1st', 'key2nd', 'key3rd', 'translatedText', 'selectedText', 'targetLang', 'tookey', 'fun1st', 'fun2nd', 'fun3rd', 'GeminiAPI', 'VisionAPI'], function(result) {
         if (result.onOffSwitchState !== undefined) {
             onOffSwitch.checked = result.onOffSwitchState;
             if (result.onOffSwitchState == true) {
@@ -267,11 +280,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('langContent').classList.remove('tc');
                 document.getElementById('AItrans').classList.remove('tc');
                 document.getElementById('settingBtn').classList.remove('tc');
+                document.getElementById('startSelectionButton').classList.remove('tc');
+
             } else {
                 On.classList.add('tc');
                 document.getElementById('langContent').classList.add('tc');
                 document.getElementById('AItrans').classList.add('tc');
                 document.getElementById('settingBtn').classList.add('tc');
+                document.getElementById('startSelectionButton').classList.add('tc');
+
             }
         }
         if (result.AI !== undefined) {
@@ -280,10 +297,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 Google.classList.add('tc');
                 GPT.classList.remove('tc');
                 document.getElementById('flag-logo').textContent = 'Gemini';
+                Prompt.style.display = "block";
             } else {
                 Google.classList.remove('tc');
                 GPT.classList.add('tc');
                 document.getElementById('flag-logo').textContent = 'Google';
+                Prompt.style.display = "none";
             }
         }
         btn1st.textContent = result.lang1st; 
@@ -321,6 +340,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         if (result.GeminiAPI !== undefined) {
             GeminiAPI.value = result.GeminiAPI;
+        }
+        if (result.VisionAPI !== undefined) {
+            VisionAPI.value = result.VisionAPI;
         }
         if (result.translatedText) {
             outputTextarea.value = result.translatedText;
@@ -360,3 +382,10 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
+document.getElementById("startSelectionButton").addEventListener("click", function() {
+    chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+        chrome.tabs.sendMessage(tabs[0].id, { type: "startSelection" }, function() {
+            window.close();
+        });
+    });
+});

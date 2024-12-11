@@ -94,7 +94,7 @@ document.addEventListener('keydown', async (event) => {
         handleTranslation(key2nd, fun2nd, lang2nd);
         handleTranslation(key3rd, fun3rd, lang3rd);
         // Undo
-        if (event.metaKey && event.key === 'z') {
+        if ((event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) && event.key === 'z') {
             event.preventDefault();
             undoLastAction(event);
         }

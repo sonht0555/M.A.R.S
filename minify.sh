@@ -27,7 +27,7 @@ echo "Copy images completed."
 mkdir -p $HTML_DIR/
 cp ./html/* $HTML_DIR/
 echo "Copy html completed."
-zip -r install.zip $Docs_DIR/
+zip -r ./docs/install.zip $Docs_DIR/
 
 
 

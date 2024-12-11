@@ -26,7 +26,10 @@
           </label>
         </div>
         <div class="flex-1"></div>
-        <div class="gap-16 setting tc" id="settingBtn" title="Shortcut settings"></div>
+        <div class="flex-1 gap-16">
+          <div class="selection tc" id="startSelectionButton" title="Shortcut selection"></div>
+          <div class="setting tc" id="settingBtn" title="Shortcut settings"></div>
+        </div>
       </div>
       <div class="flex-1 column gap-16 lang-content tc" id="langContent">
         <div class="flex-1 gap-16 column set-disable" id="setContent">
@@ -491,7 +494,12 @@
           </div>
           <div class="flex-1 gap-16">
             <div class="flex-1">
-              <input id="GeminiAPI" class="ch label lang flex-1 openApi" placeholder="Input Gemini API Key"/>
+              <input id="GeminiAPI" class="ch label flex-1 openApi" placeholder="Input Gemini API Key"/>
+            </div>
+          </div>
+          <div class="flex-1 gap-16">
+            <div class="flex-1">
+              <input id="VisionAPI" class="ch label flex-1 openApi" placeholder="Input Google Vision API Key"/>
             </div>
           </div>
         </div>

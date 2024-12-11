@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grammar and Spell Checker</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    textarea {
+      width: 100%;
+      height: 150px;
+      margin-bottom: 10px;
+    }
+    button {
+      padding: 10px 20px;
+      cursor: pointer;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+    }
+    #output {
+      margin-top: 20px;
+      white-space: pre-wrap;
+    }
+    .error-item {
+      margin: 10px 0;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      background-color: #f9f9f9;
+    }
+    .error-type {
+      font-weight: bold;
+      color: #e74c3c;
+    }
+    .suggestion {
+      color: #27ae60;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+  <h1>Grammar and Spell Checker</h1>
+  <textarea id="inputText" placeholder="Enter text to check..."></textarea>
+  <button onclick="checkGrammar()">Check Text</button>
+  <div id="output"></div>
+
+  <script>
+    async function grammarCheckWithGemini(text, apiKey) {
+      const prompt = `
+        Identify all errors in the following text, including:
+        - Spelling mistakes,
+        - Grammar errors (e.g., missing auxiliary verbs, singular/plural agreement),
+        - Punctuation issues,
+        - Suggestions for better phrasing if necessary.
+
+        Return the result as a JSON array where each item contains:
+        - 'error': the incorrect word or phrase,
+        - 'type': the type of error (e.g., spelling, grammar, punctuation, style),
+        - 'suggestion': the corrected word, phrase, or suggestion.
+
+        Text: "${text}"
+
+        Only return the JSON array, no explanations or additional text.
+      `;
+
+      try {
+        const response = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              contents: [
+                {
+                  role: "user",
+                  parts: [{ text: prompt }],
+                },
+              ],
+            }),
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        const rawContent = result.candidates?.[0]?.content?.parts?.[0]?.text;
+
+        // Trích xuất JSON hợp lệ
+        const jsonMatch = rawContent.match(/\[.*\]/s);
+        if (jsonMatch) {
+          return JSON.parse(jsonMatch[0]);
+        } else {
+          throw new Error("No valid JSON found in response.");
+        }
+      } catch (error) {
+        console.error("Error during grammar check:", error);
+        return [];
+      }
+    }
+
+    // Hàm gọi API và hiển thị kết quả
+    async function checkGrammar() {
+      const apiKey = "AIzaSyBdo7oBdch3F4Fd5iptvOoG6CRojHinqmg"; // Thay bằng API key của bạn
+      const inputText = document.getElementById("inputText").value.trim();
+      const outputDiv = document.getElementById("output");
+
+      // Xóa nội dung cũ
+      outputDiv.innerHTML = "";
+
+      if (!inputText) {
+        outputDiv.innerHTML = "<p>Please enter some text.</p>";
+        return;
+      }
+
+      // Hiển thị loading
+      outputDiv.innerHTML = "<p>Checking...</p>";
+
+      const corrections = await grammarCheckWithGemini(inputText, apiKey);
+
+      // Hiển thị kết quả
+      if (corrections.length > 0) {
+        outputDiv.innerHTML = "<h3>Corrections:</h3>";
+        corrections.forEach((item) => {
+          const errorDiv = document.createElement("div");
+          errorDiv.className = "error-item";
+          errorDiv.innerHTML = `
+            <div><span class="error-type">Error Type:</span> ${item.type}</div>
+            <div><span class="error">Error:</span> "${item.error}"</div>
+            <div><span class="suggestion">Suggestion:</span> ${item.suggestion}</div>
+          `;
+          outputDiv.appendChild(errorDiv);
+        });
+      } else {
+        outputDiv.innerHTML = "<p>No errors found!</p>";
+      }
+    }
+  </script>
+</body>
+</html>

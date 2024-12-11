@@ -124,12 +124,13 @@ function langCodeToName(code) {
 function translateSelectedText(selectedText, targetLang, context) {
     chrome.storage.sync.get(['AI'], function(result) {
         const {AI} = result;
-        if (document.getElementById('marsContent')) {
-            document.getElementById('load').style.opacity = '1';
-        }
         if (AI) {
             chrome.storage.sync.get(['GeminiAPI'], async function(result) {
                 const GeminiAPI = result.GeminiAPI;
+                if (!GeminiAPI) {
+                    document.getElementById('outputTextarea').value = '🤌 Please insert Gemini API key ⇢ M.A.R.S settings.'
+                    return;
+                }
                 const translatedText = await translateWithGemini(selectedText, targetLang, context, GeminiAPI);
                 setLoadingCursor();
                 if (document.getElementById('marsContent')) {
@@ -178,7 +179,13 @@ function translateSelectedText(selectedText, targetLang, context) {
 }
 // Gemini Translate
 async function translateWithGemini(selectedText, targetLang, context, apiKey) {
+    if (document.getElementById('marsContent')) {
+        document.getElementById('load').style.opacity = '1'; 
+      } else if (document.getElementById('loadings')) {
+        document.getElementById('loadings').style.opacity = '1'; 
+    }
     const prompt = `"Translate the following text into ${langCodeToName(targetLang)}: [${selectedText}] with the context: [${context}]. Provide only the translated text as output, without any additional explanations."`;
+    // const prompt = `„Traduceți următorul text în ${langCodeToName(targetLang)}: [${selectedText}] cu contextul: [${context}]. Furnizați doar textul tradus ca rezultat, fără explicații suplimentare."`;
     try {
       const response = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
@@ -195,7 +202,11 @@ async function translateWithGemini(selectedText, targetLang, context, apiKey) {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-
+      if (document.getElementById('marsContent')) {
+        document.getElementById('load').style.opacity = '0';
+      } else if (document.getElementById('loadings')) {
+        document.getElementById('loadings').style.opacity = '0'; 
+      }
       const result = await response.json();
       return result.candidates[0].content.parts[0].text;
     } catch (error) {
